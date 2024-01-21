@@ -1,26 +1,28 @@
-use rspotify::{clients::OAuthClient, AuthCodeSpotify, Token};
+use rspotify::{clients::OAuthClient, AuthCodeSpotify};
 use rustify::auth::*;
 use std::{error::Error, io::Write};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let spotify = init_spotify();
-    let token = Token::from_cache(&spotify.config.cache_path);
+    let token = spotify.read_token_cache(true).await;
 
     match token {
-        Ok(_) => {
+        Ok(token) => {
             // Check if token is expired and refresh it if needed
-            let _ = refresh_auth_code(&spotify).await;
+            if let Some(token) = token {
+                let _ = refresh_auth_code(&spotify, token).await;
+            }
         }
         Err(_) => {
             let _ = get_token_auto(&spotify).await;
         }
     }
 
-    let token = spotify.read_token_cache(false).await.unwrap();
-    *spotify.token.lock().await.unwrap() = token;
-
-    println!("{:?}", spotify.pause_playback(None).await);
+    println!(
+        "{:?}",
+        spotify.current_user_playlists_manual(Some(2), None).await
+    );
 
     Ok(())
 }

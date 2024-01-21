@@ -37,8 +37,11 @@ pub fn init_spotify() -> AuthCodeSpotify {
     AuthCodeSpotify::with_config(creds, oauth, config)
 }
 
-pub async fn refresh_auth_code(spotify: &AuthCodeSpotify) -> Result<(), &'static str> {
-    let token = Token::from_cache(&spotify.config.cache_path).unwrap();
+pub async fn refresh_auth_code(
+    spotify: &AuthCodeSpotify,
+    token: Token,
+) -> Result<(), &'static str> {
+    *spotify.token.lock().await.unwrap() = Some(token.clone());
     if token.is_expired() {
         match spotify.refresh_token().await {
             Ok(_) => Ok(()),
