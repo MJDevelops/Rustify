@@ -1,1 +1,1 @@
-# Rustify - A Spotify TUI in Rust
+# Rustify - A Spotify TUI written in Rust
