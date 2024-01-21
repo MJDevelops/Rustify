@@ -1,1 +1,1 @@
-# Rustify - A Spotify Client in the Terminal
+# Rustify - A Spotify-TUI
