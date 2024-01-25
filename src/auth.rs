@@ -39,7 +39,7 @@ pub fn init_spotify() -> AuthCodeSpotify {
 
 pub async fn refresh_auth_code(
     spotify: &AuthCodeSpotify,
-    token: Token,
+    token: &Token,
 ) -> Result<(), &'static str> {
     *spotify.token.lock().await.unwrap() = Some(token.clone());
     if token.is_expired() {
