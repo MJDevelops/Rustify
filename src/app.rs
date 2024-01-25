@@ -98,11 +98,12 @@ impl Model {
 
     pub async fn application_loop(&mut self) {
         // Setup tasks
-        let _ = self.terminal.enter_alternate_screen();
-        let _ = self.terminal.enable_raw_mode();
         let _ = self.get_token().await;
 
         println!("{:?}", self.spotify.current_playing(None, Some([])).await);
+
+        let _ = self.terminal.enter_alternate_screen();
+        let _ = self.terminal.enable_raw_mode();
 
         while !self.quit {
             match self.app.tick(PollStrategy::Once) {
@@ -172,7 +173,11 @@ impl Model {
                     }
                 }
             }
-            Err(_) => return Err("A client error occured"),
+            // Double work, fine for now
+            Err(_) => match self.get_token_auto().await {
+                Ok(_) => return Ok(()),
+                Err(_) => return Err("Couldn't fetch token"),
+            },
         }
     }
 
