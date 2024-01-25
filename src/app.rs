@@ -52,9 +52,9 @@ impl Model {
             .raw_mut()
             .draw(|f| {
                 let chunks = Layout::default()
-                    .direction(Direction::Vertical)
+                    .direction(Direction::Horizontal)
                     .margin(1)
-                    .constraints([Constraint::Length(3)].as_ref())
+                    .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
                     .split(f.size());
                 self.app.view(&Id::Playlist, f, chunks[0]);
             })
@@ -101,6 +101,7 @@ impl Model {
         let _ = self.get_token().await;
         let _ = self.terminal.enter_alternate_screen();
         let _ = self.terminal.enable_raw_mode();
+        self.view();
 
         while !self.quit {
             match self.app.tick(PollStrategy::Once) {
@@ -151,7 +152,7 @@ impl Update<Msg> for Model {
 impl Model {
     /// Loads token from cache or requests a new token and saves it internally
     pub async fn get_token(&self) -> Result<(), &'static str> {
-        let token = self.spotify.read_token_cache(false).await;
+        let token = self.spotify.read_token_cache(true).await;
 
         match token {
             Ok(token) => {

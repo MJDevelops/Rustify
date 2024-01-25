@@ -1,8 +1,11 @@
 use tuirealm::{
     command::{Cmd, CmdResult},
     event::{Key, KeyEvent, KeyModifiers},
-    props::{Alignment, Color, Style, TextModifiers},
-    tui::widgets::{Block, Paragraph},
+    props::{Alignment, BorderSides, BorderType, Borders, Color, Style, TextModifiers},
+    tui::{
+        style::Stylize,
+        widgets::{Block, List, ListItem, Paragraph},
+    },
     AttrValue, Attribute, Component, Event, MockComponent, NoUserEvent, Props, State, StateValue,
 };
 
@@ -81,6 +84,11 @@ impl Playlist {
         self.attr(Attribute::Value, AttrValue::String(s));
         self
     }
+
+    pub fn borders(mut self, b: Borders) -> Self {
+        self.attr(Attribute::Borders, AttrValue::Borders(b));
+        self
+    }
 }
 
 impl MockComponent for Playlist {
@@ -98,6 +106,10 @@ impl MockComponent for Playlist {
                 .props
                 .get_or(Attribute::Foreground, AttrValue::Color(Color::Reset))
                 .unwrap_color();
+            let background = self
+                .props
+                .get_or(Attribute::Background, AttrValue::Color(Color::Cyan))
+                .unwrap_color();
             let modifiers = self
                 .props
                 .get_or(
@@ -109,11 +121,25 @@ impl MockComponent for Playlist {
                 .props
                 .get_or(Attribute::Focus, AttrValue::Flag(false))
                 .unwrap_flag();
+            let title = self
+                .props
+                .get_or(
+                    Attribute::Title,
+                    AttrValue::Title((String::default(), Alignment::Center)),
+                )
+                .unwrap_title();
+
             frame.render_widget(
-                Paragraph::new(text)
-                    .block(Block::default())
+                List::new([ListItem::new("item 1"), ListItem::new("item 2")])
                     .style(Style::default().fg(foreground).add_modifier(modifiers))
-                    .alignment(alignment),
+                    .bg(background)
+                    .block(
+                        Block::default()
+                            .border_type(BorderType::Thick)
+                            .borders(BorderSides::ALL)
+                            .border_style(Style::default().fg(Color::Black))
+                            .title(title.0),
+                    ),
                 area,
             );
         }
@@ -143,11 +169,11 @@ impl PlaylistComponent {
         Self {
             component: Playlist::default()
                 .alignment(Alignment::Center)
-                .foreground(Color::Red)
+                .foreground(Color::Black)
                 .value(initial_value)
                 .modifiers(TextModifiers::BOLD)
                 .label("Playlist")
-                .background(Color::Blue),
+                .background(Color::Cyan),
         }
     }
 }
